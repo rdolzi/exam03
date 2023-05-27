@@ -6,7 +6,7 @@
 /*   By: rdolzi <rdolzi@student.42roma.it>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/27 16:21:09 by rdolzi            #+#    #+#             */
-/*   Updated: 2023/05/27 20:26:53 by rdolzi           ###   ########.fr       */
+/*   Updated: 2023/05/27 20:28:04 by rdolzi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,18 +63,8 @@
 
 // IMPORTANTE: la mappa viene printata solo dopo che tutte le linee vengono lette
 
-#include "micropaint.h"
-#include <stdio.h>
-#include <stdlib.h>
-
-void    open_read_error()
-{
-    write(1, &"Error: Operation file corrupted\n", 32);
-    return (1);
-}
-
 // stampa errore
-// void    open_read_error(); 
+// void    open_read_error();
 
 // legge la prima linea e setta width/height/background_char (malloc)
 // void    set_mat(FILE *fd, char **mat);
@@ -88,6 +78,17 @@ void    open_read_error()
 
 // free della matrice
 // void free_matrix(char **mat);
+
+
+#include "micropaint.h"
+#include <stdio.h>
+#include <stdlib.h>
+
+void    open_read_error()
+{
+    write(1, &"Error: Operation file corrupted\n", 32);
+    return (1);
+}
 
 // flag values:
 //      > 0 se non ce nuova linea
