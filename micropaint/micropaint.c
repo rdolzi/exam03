@@ -6,7 +6,7 @@
 /*   By: rdolzi <rdolzi@student.42roma.it>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/27 16:21:09 by rdolzi            #+#    #+#             */
-/*   Updated: 2023/05/27 20:28:04 by rdolzi           ###   ########.fr       */
+/*   Updated: 2023/05/27 21:44:47 by rdolzi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,7 +67,7 @@
 // void    open_read_error();
 
 // legge la prima linea e setta width/height/background_char (malloc)
-// void    set_mat(FILE *fd, char **mat);
+// void    set_mat(FILE *fd);
 
 // legge le n-linee e setta l output in mat
 // ritorna 0 se non c è linea da leggere, -1 in caso di errore, 1 se lettura è ok
@@ -83,22 +83,69 @@
 #include "micropaint.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
-void    open_read_error()
+//TO TEST
+void    print_mat(char **mat)
+{
+    int i;
+    int j;
+
+    i = 0;
+    while (mat[i])
+    {
+        j = 0;
+        while(mat[i][j])
+        {
+            write(1, &mat[i][j], 1);
+            write(1, &" ", 1);
+            j++;
+        }
+    i++;
+    write(1, &"\n", 1);
+    }
+}
+void open_read_error()
 {
     write(1, &"Error: Operation file corrupted\n", 32);
-    return (1);
+    exit(1);
+}
+
+// legge la prima linea e setta width/height/background_char (malloc)
+char **set_mat(FILE *fd)
+{
+    int     i;
+    int     res;
+    int     width;
+    int     height;
+    char    background_char;
+    char    **mat;
+
+    res = fscanf(fd, "%d %d %c", &width, &height, &background_char);
+    if (res == -1 || (width <= 0 || width > 300) || (height <= 0 || height > 300))
+        open_read_error(); 
+    mat = malloc (height * sizeof(char *));
+    i = -1;
+    while (++i < height)
+        mat[i] = malloc(width);
+    while (height-- > 0)
+    {
+        i = -1;
+        while (++i < width)
+            mat[height][i] = background_char;      
+    }
+    return (mat);
 }
 
 // flag values:
 //      > 0 se non ce nuova linea
 //      > -1 se nuova linea contiene errori
 //      > 1 se nuova linea è valida
-int main(int argc, char *argv)
+int main(int argc, char **argv)
 {
     FILE        *fd;
     t_pixel     *pixel;
-    char        **mat;
+    char        **mat; // eventualmente t_mat
     int         flag;
     
     if (argc != 2)
@@ -106,20 +153,21 @@ int main(int argc, char *argv)
         write(1, &"Error: argument\n", 16);
         return (1);
     }
-    if ((fd = fopen("test.txt", "r")) == NULL)
+    if ((fd = fopen(argv[1], "r")) == NULL)
         open_read_error();
-    set_mat(fd, mat);
-    while (1)
-    {
-        flag = set_pixel(fd, mat, pixel);
-        if (flag == 0)
-            break;
-        if (flag == -1)
-            open_read_error();
-        free(pixel);
-    }
-    paint(mat);
-    free_matrix(mat);
-    fclose(fd);
+    mat = set_mat(fd);
+    print_mat(mat);
+    // while (1)
+    // {
+    //     flag = set_pixel(fd, mat, pixel);
+    //     if (flag == 0)
+    //         break;
+    //     if (flag == -1)
+    //         open_read_error();
+    //     free(pixel);
+    // }
+    // paint(mat);
+    // free_matrix(mat);
+    // fclose(fd);
     return (0);
 }
