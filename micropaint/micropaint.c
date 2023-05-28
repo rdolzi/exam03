@@ -6,86 +6,72 @@
 /*   By: rdolzi <rdolzi@student.42roma.it>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/27 16:21:09 by rdolzi            #+#    #+#             */
-/*   Updated: 2023/05/28 14:53:22 by rdolzi           ###   ########.fr       */
+/*   Updated: 2023/05/28 17:57:49 by rdolzi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// GOAL:
-//     Write a program that will read an "operation file" and print the result in the terminal
+#include "micropaint.h"
 
-// ARGUMENTS:
-//     1. Your program must take one argument, it will be the path to the "operation file"
-//         A.  If 0 or more than 1 argument is given to your program write "Error: argument" followed by a \n in STDOUT
 
-// OPEN/READ FILE:
-//     1. If any problem occurs while you open and/or read the "operation file" write "Error: Operation file corrupted" followed by a \n in STDOUT
 
-// OPERATION FILE :
-//     1.  The "operation file" will contains lines with one operation per line
-//     2.  The lines must be read in order and therefore operations must be executed in the same order
-//     3.  There must be one space between each variable in a line
-//     4.  The last line can be with or without a \n
-//     5.  If a line is incorrect an error occurs.
+void    free_matrix(t_map *map)
+{
+    int i;
 
-// OPERATION FILE RULES:
-
-// 1. WIDTH HEIGHT BACKGROUND_CHAR
-//     A.This line is ALWAYS the first line of the file and it defines the zone where to draw.
-//     B.Your program should not display anything outside the draw zone.
-
-// - WIDTH: must be a int with 0 < WIDTH <= 300, the horizontal number of characters to use for the draw zone
-// - HEIGHT: must be a int with 0 < HEIGHT <= 300, the vertical number of characters to use for the draw zone 
-// - BACKGROUND_CHAR: any empty space will be filled with BACKGROUND_CHAR
-
-// 2. r X Y WIDTH HEIGHT CHAR
-//     A.This operation will draw an EMPTY rectangle (where only the border of the rectangle is drawn)
-
-// - r: the character r
-// - X: any float, the horizontal position of the top left corner of the rectangle
-// - Y: any float, the vertical position of the top left corner of the rectangle
-// - WIDTH: a positive float but not 0, the width of the rectangle (horizontal)
-// - HEIGHT: a positive float but not 0, the height of the rectangle (vertical)
-// - CHAR: the char use to draw the rectangle
-
-// 3. R X Y WIDTH HEIGHT CHAR
-//     A.This operation will draw a FILLED rectangle
-
-// - R: the character R
-// - X: any float, the horizontal position of the top left corner of the rectangle
-// - Y: any float, the vertical position of the top left corner of the rectangle
-// - WIDTH: a positive float but not 0, the width of the rectangle (horizontal)
-// - HEIGHT: a positive float but not 0, the height of the rectangle (vertical)
-// - CHAR: the char use to draw the rectangle
-
-// MAIN RETURN:
-//     1. If an error has occured your program must return 1
-//     2. If no error has occured it must return 0
-
-// IMPORTANTE: la mappa viene printata solo dopo che tutte le linee vengono lette
-
-// stampa errore
-// void    open_read_error();
-
-// legge la prima linea e setta width/height/background_char (malloc)
-// void    set_mat(FILE *fd);
+    i = -1;
+    while (++i < map->height)
+        free(map->mat[i]);
+    free(map->mat);
+}
 
 // legge le n-linee e setta l output in mat
 // ritorna 0 se non c è linea da leggere, -1 in caso di errore, 1 se lettura è ok
-// int set_pixel(FILE *fd, char **mat, t_pixel *pixel);
+// expected lines:
+// r X Y WIDTH HEIGHT CHAR
+// R X Y WIDTH HEIGHT CHAR
+int set_pixel(FILE *fd, t_map *map, t_pixel *px)
+{
+    int res;
+    int h;
+    int w;
+    int i;
+    int j;
+    px = malloc(sizeof(t_pixel));
+    res = fscanf(fd, "%c %d %d %d %d %c \n", &px->r, &px->x_pos, &px->y_pos, &px->width, &px->height, &px->backgroud_char);
+    printf(">res:%d\n",res);
+    printf(">r:%c\n", px->r);
+    if (px->r == '\0')
+        return (0);
+    printf(">width:%d | height:%d\n", px->width, px->height);
+    if (px->width <= 0 || px->height <= 0)
+        return (-1);
+    printf("PRE>x_pos:%d | y_pos:%d\n", px->x_pos, px->y_pos);
+    w = px->x_pos + px->width + 1;
+    h = px->y_pos + px->height + 1;
+    if (px->x_pos < 0)
+        px->x_pos = 0;
+    if (px->y_pos < 0)
+        px->y_pos = 0;
+    printf("POST>x_pos:%d | y_pos:%d\n", px->x_pos, px->y_pos);
+    printf(">w:%d | h:%d\n", w, h);
+    i = px->y_pos;
+    printf(">map->height:%d | map->width:%d\n", map->height, map->width);
+    printf("i:%d | h:%d\n", i, h);
+    while ((i < h) && (i < map->height))
+    {
+        printf("qqqq");
+        j = px->x_pos;
+        while (j < w && j < map->width)
+        {
+            printf(">i:%d | j:%d\n", i, j);
+            map->mat[i][j] = px->backgroud_char;
+            j++;
+        }
+        i++;
+    }
+    return (res);
+}
 
-// stampa la matrice in STDOUT
-// void    paint(char **mat);
-
-// free della matrice
-// void free_matrix(char **mat);
-
-
-#include "micropaint.h"
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-
-//TO TEST
 void    paint(t_map *map)
 {
     int i;
@@ -96,10 +82,7 @@ void    paint(t_map *map)
     {
         j = -1;
         while (++j < map->width)
-        {
             write(1, &map->mat[i][j], 1);
-            write(1, &" ", 1);
-        }
         write(1, &"\n", 1);
     }
 }
@@ -118,7 +101,7 @@ void    set_map(FILE *fd, t_map *map)
     int res;
     char background_char;
 
-    res = fscanf(fd, "%d %d %c", &map->width, &map->height, &background_char);
+    res = fscanf(fd, "%d %d %c \n", &map->width, &map->height, &background_char);
     if (res == -1 || (map->width <= 0 || map->width > 300) 
     || (map->height <= 0 || map->height > 300))
         open_read_error();
@@ -133,6 +116,7 @@ void    set_map(FILE *fd, t_map *map)
         while (++j < map->width)
             map->mat[i][j] = background_char;
     }
+    printf(">res:%d\n", res);
 }
 
 // flag values:
@@ -154,18 +138,24 @@ int main(int argc, char **argv)
     if ((fd = fopen(argv[1], "r")) == NULL)
         open_read_error();
     set_map(fd, &map);
+    while (1)
+    {
+        flag = set_pixel(fd, &map, pixel);
+        printf(">flag:%d\n",flag);
+        if (flag == 0)
+            break;
+        if (flag == -1)
+        {
+            fclose(fd);
+            //free(pixel);
+            free_matrix(&map);
+            open_read_error();
+        }
+        //free(pixel);
+        paint(&map);
+    }
     paint(&map);
-    // while (1)
-    // {
-    //     flag = set_pixel(fd, mat, pixel);
-    //     if (flag == 0)
-    //         break;
-    //     if (flag == -1)
-    //         open_read_error();
-    //     free(pixel);
-    // }
-    // paint(mat);
-    // free_matrix(mat);
-    // fclose(fd);
+    fclose(fd);
+    free_matrix(&map);
     return (0);
 }
