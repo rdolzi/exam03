@@ -6,7 +6,7 @@
 /*   By: rdolzi <rdolzi@student.42roma.it>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/27 16:21:09 by rdolzi            #+#    #+#             */
-/*   Updated: 2023/05/28 17:57:49 by rdolzi           ###   ########.fr       */
+/*   Updated: 2023/05/28 18:03:58 by rdolzi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,7 +129,7 @@ int main(int argc, char **argv)
     t_pixel *pixel;
     t_map   map;
     int flag;
-
+    printf("p:%p\n",pixel);
     if (argc != 2)
     {
         write(1, &"Error: argument\n", 16);
@@ -147,7 +147,7 @@ int main(int argc, char **argv)
         if (flag == -1)
         {
             fclose(fd);
-            //free(pixel);
+            free(pixel);
             free_matrix(&map);
             open_read_error();
         }
