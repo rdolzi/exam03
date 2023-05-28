@@ -6,7 +6,7 @@
 /*   By: rdolzi <rdolzi@student.42roma.it>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/27 16:21:09 by rdolzi            #+#    #+#             */
-/*   Updated: 2023/05/27 21:44:47 by rdolzi           ###   ########.fr       */
+/*   Updated: 2023/05/28 14:53:22 by rdolzi           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,55 +86,53 @@
 #include <unistd.h>
 
 //TO TEST
-void    print_mat(char **mat)
+void    paint(t_map *map)
 {
     int i;
     int j;
 
-    i = 0;
-    while (mat[i])
+    i = -1;
+    while (++i < map->height)
     {
-        j = 0;
-        while(mat[i][j])
+        j = -1;
+        while (++j < map->width)
         {
-            write(1, &mat[i][j], 1);
+            write(1, &map->mat[i][j], 1);
             write(1, &" ", 1);
-            j++;
         }
-    i++;
-    write(1, &"\n", 1);
+        write(1, &"\n", 1);
     }
 }
+
 void open_read_error()
 {
     write(1, &"Error: Operation file corrupted\n", 32);
     exit(1);
 }
 
-// legge la prima linea e setta width/height/background_char (malloc)
-char **set_mat(FILE *fd)
+// legge la prima linea e setta width/height/background_char (calloc)
+void    set_map(FILE *fd, t_map *map)
 {
-    int     i;
-    int     res;
-    int     width;
-    int     height;
-    char    background_char;
-    char    **mat;
+    int i;
+    int j;
+    int res;
+    char background_char;
 
-    res = fscanf(fd, "%d %d %c", &width, &height, &background_char);
-    if (res == -1 || (width <= 0 || width > 300) || (height <= 0 || height > 300))
-        open_read_error(); 
-    mat = malloc (height * sizeof(char *));
+    res = fscanf(fd, "%d %d %c", &map->width, &map->height, &background_char);
+    if (res == -1 || (map->width <= 0 || map->width > 300) 
+    || (map->height <= 0 || map->height > 300))
+        open_read_error();
+    map->mat = malloc(map->height * sizeof(char *));
     i = -1;
-    while (++i < height)
-        mat[i] = malloc(width);
-    while (height-- > 0)
+    while (++i < map->height)
+        map->mat[i] = calloc(map->width + 1, 1);
+    i = -1;
+    while (++i < map->height)
     {
-        i = -1;
-        while (++i < width)
-            mat[height][i] = background_char;      
+        j = -1;
+        while (++j < map->width)
+            map->mat[i][j] = background_char;
     }
-    return (mat);
 }
 
 // flag values:
@@ -143,11 +141,11 @@ char **set_mat(FILE *fd)
 //      > 1 se nuova linea è valida
 int main(int argc, char **argv)
 {
-    FILE        *fd;
-    t_pixel     *pixel;
-    char        **mat; // eventualmente t_mat
-    int         flag;
-    
+    FILE *fd;
+    t_pixel *pixel;
+    t_map   map;
+    int flag;
+
     if (argc != 2)
     {
         write(1, &"Error: argument\n", 16);
@@ -155,8 +153,8 @@ int main(int argc, char **argv)
     }
     if ((fd = fopen(argv[1], "r")) == NULL)
         open_read_error();
-    mat = set_mat(fd);
-    print_mat(mat);
+    set_map(fd, &map);
+    paint(&map);
     // while (1)
     // {
     //     flag = set_pixel(fd, mat, pixel);

@@ -12,4 +12,11 @@ typedef struct s_pixel
     char    backgroud;
 } t_pixel;
 
+typedef struct s_map
+{
+    char    **mat;
+    int     width;
+    int     height;
+}   t_map;
+
 #endif
